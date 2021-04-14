@@ -29,6 +29,15 @@ app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
 
+app.get('/info', (req, res) => {
+    res.send(
+        `
+        <div>Phonebook has info for ${persons.length} people</div>
+        <div>${new Date()}</div>
+        `
+    )
+})
+
 app.get('/api/persons', (req, res) => {
     res.json(persons)
 })
