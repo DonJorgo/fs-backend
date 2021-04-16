@@ -59,6 +59,14 @@ app.post('/api/persons', (req, res) => {
     const body = req.body
     const MAX_ID = 5000000
 
+    const validation = validate(req.body)
+
+    if (validation.errors) {
+        return res.status(404).json({
+            errors: validation.errors
+        })
+    }
+
     const person = {
         name: body.name,
         number: body.number,
@@ -69,6 +77,25 @@ app.post('/api/persons', (req, res) => {
     res.json(person)
 })
 
+const validate = person => {
+    const nameExists = name =>
+        persons.some(person => person.name === name)
+
+
+    let errors = []
+    if (!person.name) {
+        errors.push("missing name")
+    } else if (nameExists(person.name)) {
+        errors.push("name must be unique")
+    }   
+    if (!person.number) {
+        errors.push("missing number")
+    }
+
+    return errors.length > 0
+        ? { errors: errors }
+        : {}
+}
 
 app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
