@@ -71,26 +71,26 @@ app.get('/api/persons/:id', (request, response) => {
     )
 })
 
-app.post('/api/persons', (req, res) => {
-    const body = req.body
+app.post('/api/persons', (request, response) => {
+    const body = request.body
     const MAX_ID = 5000000
 
-    const validation = validate(req.body)
+    const validation = validate(request.body)
 
     if (validation.errors) {
-        return res.status(404).json({
+        return response.status(404).json({
             errors: validation.errors
         })
     }
 
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: Math.floor(Math.random() * MAX_ID)
-    }
+    })
 
-    persons = persons.concat(person)
-    res.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
 const validate = person => {
