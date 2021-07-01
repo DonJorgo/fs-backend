@@ -1,6 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+
+const Person = require('./models/person')
 
 const app = express()
 
@@ -39,33 +42,33 @@ let persons = [
     }
 ]
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
 
-app.get('/info', (req, res) => {
-    res.send(
-        `
-        <div>Phonebook has info for ${persons.length} people</div>
-        <div>${new Date()}</div>
-        `
+app.get('/info', (request, response) => {
+    Person.count().then(count => {
+        response.send(`
+            <div>Phonebook has info for ${count} people</div>
+            <div>${new Date()}</div>
+        `)
+    })
+})
+
+app.get('/api/persons', (request, response) => {
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
+
+})
+
+app.get('/api/persons/:id', (request, response) => {
+    Person.findById(request.params.id).then(person => {
+        response.json(person)
+    }).catch(e => 
+        response.status(404).end()
     )
-})
-
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
-})
-
-app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const person = persons.find(person => person.id === id)
-
-    if (person) {
-        res.json(person)
-    } else {
-        res.status(404).end()
-    }
 })
 
 app.post('/api/persons', (req, res) => {
@@ -93,7 +96,6 @@ app.post('/api/persons', (req, res) => {
 const validate = person => {
     const nameExists = name =>
         persons.some(person => person.name === name)
-
 
     let errors = []
     if (!person.name) {
