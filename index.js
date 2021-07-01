@@ -64,12 +64,10 @@ app.get('/api/persons', (request, response) => {
 
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id).then(person => {
         response.json(person)
-    }).catch(e =>
-        response.status(404).end()
-    )
+    }).catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -89,9 +87,9 @@ app.post('/api/persons', (request, response) => {
         number: body.number,
     })
 
-    person.save().then(savedPerson => {
-        response.json(savedPerson)
-    })
+    person.save()
+        .then(savedPerson => response.json(savedPerson))
+        .catch(error => next(error))
 })
 
 const validate = person => {
@@ -113,11 +111,20 @@ const validate = person => {
         : {}
 }
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
-        .then(result => { res.status(204).end() })
-        .catch(error => {
-            console.log(error)
-            response.status(400).send({ error: 'malformatted id' })
-        })
+        .then(result => res.status(204).end())
+        .catch(error => next(error))
 })
+
+const errorHandler = (error, request, response, next) => {
+    console.log(error)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+
+app.use(errorHandler)
