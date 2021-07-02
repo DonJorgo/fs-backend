@@ -59,13 +59,6 @@ app.get('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
-    const validation = validate(request.body)
-    if (validation.errors) {
-        return response.status(404).json({
-            errors: validation.errors
-        })
-    }
-
     const person = new Person({
         name: body.name,
         number: body.number,
@@ -74,17 +67,6 @@ app.post('/api/persons', (request, response, next) => {
         .then(savedPerson => response.json(savedPerson))
         .catch(error => next(error))
 })
-
-const validate = person => {
-    let errors = []
-    if (!person.name) {
-        errors.push("missing name")
-    }
-    if (!person.number) {
-        errors.push("missing number")
-    }
-    return errors.length > 0 ? { errors: errors } : {}
-}
 
 
 app.put('/api/persons/:id', (request, response, next) => {
